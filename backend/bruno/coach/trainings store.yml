@@ -1,0 +1,25 @@
+info:
+  name: trainings store
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{api-host}}/coach/trainings"
+  body:
+    type: json
+    data: |
+      {
+        "training_type_id": 1,
+        "date": "2026-02-28 12:00:00",
+        "duration_minutes": 60,
+        "description": "Coach created training",
+        "status": "planned"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

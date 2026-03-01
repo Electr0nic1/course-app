@@ -1,0 +1,21 @@
+info:
+  name: users update
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{api-host}}/admin/users/17"
+  body:
+    type: json
+    data: |
+      {
+        "full_name": "Updated Name"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

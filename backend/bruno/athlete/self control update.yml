@@ -1,0 +1,22 @@
+info:
+  name: self control update
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{api-host}}/athlete/self-controls/121"
+  body:
+    type: json
+    data: |-
+      {
+        "feeling": 10,
+        "description": "Updated"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

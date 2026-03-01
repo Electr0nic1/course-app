@@ -1,0 +1,22 @@
+info:
+  name: training assign
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{api-host}}/coach/trainings/26/assign"
+  body:
+    type: json
+    data: |
+      {
+        "athlete_ids": [5, 6, 7, 9],
+        "status": "assigned"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

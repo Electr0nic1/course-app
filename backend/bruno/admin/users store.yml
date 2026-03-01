@@ -1,0 +1,26 @@
+info:
+  name: users store
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{api-host}}/admin/users"
+  body:
+    type: json
+    data: |
+      {
+        "full_name": "Test Athlete User",
+        "email": "athlete_new@test.com",
+        "password": "password",
+        "birth_date": "2000-01-01",
+        "gender": "male",
+        "role_id": 3
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: training update
+  type: http
+  seq: 7
+
+http:
+  method: PATCH
+  url: "{{api-host}}/coach/trainings/25"
+  body:
+    type: json
+    data: |
+      {
+        "duration_minutes": 75,
+        "description": "Updated training"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

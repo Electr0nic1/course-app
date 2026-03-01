@@ -1,0 +1,27 @@
+info:
+  name: self control store
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{api-host}}/athlete/self-controls"
+  body:
+    type: json
+    data: |-
+      {
+        "date": "2026-02-28 10:00:00",
+        "heart_rate": 120,
+        "systolic_pressure": 120,
+        "diastolic_pressure": 80,
+        "body_weight": 75.5,
+        "feeling": 8,
+        "description": "Test self-control"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

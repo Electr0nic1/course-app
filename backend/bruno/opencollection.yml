@@ -1,0 +1,32 @@
+opencollection: 1.0.0
+
+info:
+  name: coursework
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  auth:
+    type: bearer
+    token: 14|1Em1tJMIIiIp8GwFPN7zuVF00wvfeU3Vg6Nfjh6A00057176
+  variables:
+    - name: api-host
+      value: http://127.0.0.1:8000/api
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

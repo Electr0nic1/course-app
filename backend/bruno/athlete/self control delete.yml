@@ -1,0 +1,15 @@
+info:
+  name: self control delete
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{api-host}}/athlete/self-controls/121"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

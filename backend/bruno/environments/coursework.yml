@@ -1,0 +1,4 @@
+name: coursework
+variables:
+  - name: token
+    value: ""

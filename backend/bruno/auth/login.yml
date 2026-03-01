@@ -1,0 +1,32 @@
+info:
+  name: login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api-host}}/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "athlete_new@test.com",
+        "password": "password"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const data = res.body;
+
+        if (data.token) {
+          bru.setEnvVar("token", data.token);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
