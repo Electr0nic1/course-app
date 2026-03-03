@@ -21,8 +21,15 @@ class SelfControlController extends Controller
             return response()->json(['message' => 'Athlete profile not found'], 404);
         }
 
+        $validated = $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to'   => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+        ]);
+
         $items = SelfControl::query()
             ->where('athlete_id', $athlete->user_id)
+            ->when($validated['from'] ?? null, fn($q, $from) => $q->whereDate('date', '>=', $from))
+            ->when($validated['to']   ?? null, fn($q, $to)   => $q->whereDate('date', '<=', $to))
             ->orderByDesc('date')
             ->paginate(20);
 

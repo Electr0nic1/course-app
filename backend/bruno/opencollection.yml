@@ -20,7 +20,7 @@ request:
       value: Bearer {{token}}
   auth:
     type: bearer
-    token: 14|1Em1tJMIIiIp8GwFPN7zuVF00wvfeU3Vg6Nfjh6A00057176
+    token: 33|LkjxN9uW4BTrClSXHu5dGrURLfSXIJcI3fiZ7bxCd10f8259
   variables:
     - name: api-host
       value: http://127.0.0.1:8000/api

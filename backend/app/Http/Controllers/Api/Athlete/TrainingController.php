@@ -13,18 +13,23 @@ class TrainingController extends Controller
     {
         $user = $request->user();
 
-        // athlete profile is a subtype (athletes.user_id = users.id)
         if (!$user?->athlete) {
             return response()->json(['message' => 'Athlete profile not found'], 404);
         }
 
+        $validated = $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to'   => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+        ]);
+
         $athleteUserId = (int) $user->id;
 
-        // Надёжная фильтрация через pivot athlete_training (athlete_id хранит athletes.user_id)
         $items = Training::query()
             ->whereHas('athletes', function ($q) use ($athleteUserId) {
                 $q->where('athletes.user_id', $athleteUserId);
             })
+            ->when($validated['from'] ?? null, fn($q, $from) => $q->whereDate('date', '>=', $from))
+            ->when($validated['to']   ?? null, fn($q, $to)   => $q->whereDate('date', '<=', $to))
             ->with([
                 'trainingType',
                 'coach.user',
