@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('athletes', function (Blueprint $table) {
             $table->foreignId('user_id')->primary()->constrained('users')->cascadeOnDelete();
 
-            // coach_id теперь хранит user_id тренера (потому что coaches PK = user_id)
             $table->foreignId('coach_id')->nullable()
                 ->references('user_id')->on('coaches')
                 ->nullOnDelete();

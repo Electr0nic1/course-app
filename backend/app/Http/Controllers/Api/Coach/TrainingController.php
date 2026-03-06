@@ -21,7 +21,6 @@ class TrainingController extends Controller
         }
 
         $items = Training::query()
-            // trainings.coach_id -> coaches.user_id
             ->where('coach_id', $coach->user_id)
             ->with(['trainingType', 'athletes.user', 'coach.user'])
             ->orderByDesc('date')
@@ -39,7 +38,6 @@ class TrainingController extends Controller
 
         $data = $request->validated();
 
-        // trainings.coach_id -> coaches.user_id
         $data['coach_id'] = $coach->user_id;
 
         $data['status'] = $data['status'] ?? 'planned';
@@ -86,11 +84,9 @@ class TrainingController extends Controller
         }
 
         $validated = $request->validated();
-        $athleteIds = $validated['athlete_ids']; // ожидаем athletes.user_id
+        $athleteIds = $validated['athlete_ids'];
         $status = $validated['status'] ?? 'assigned';
 
-        // Разрешаем назначать только своих спортсменов
-        // athletes.user_id = id спортсмена (users.id)
         $allowedAthletes = Athlete::query()
             ->where('coach_id', $coachUserId)
             ->whereIn('user_id', $athleteIds)
@@ -101,8 +97,6 @@ class TrainingController extends Controller
             return response()->json(['message' => 'Some athletes are not allowed for this coach'], 403);
         }
 
-        // syncWithoutDetaching ожидает: [related_id => ['pivot_col' => value]]
-        // related_id для Athlete = user_id (PK)
         $attachData = [];
         foreach ($allowedAthletes as $aid) {
             $attachData[$aid] = ['status' => $status];

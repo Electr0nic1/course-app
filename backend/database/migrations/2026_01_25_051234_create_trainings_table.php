@@ -22,7 +22,6 @@ return new class extends Migration
                 ->constrained('training_types')
                 ->cascadeOnDelete();
 
-            // trainings.coach_id -> coaches.user_id
             $table->foreignId('coach_id')
                 ->references('user_id')->on('coaches')
                 ->cascadeOnDelete();

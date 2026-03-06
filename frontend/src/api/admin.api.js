@@ -26,3 +26,8 @@ export async function deleteUserApi(id) {
   const { data } = await http.delete(`/admin/users/${id}`)
   return data
 }
+
+export async function listActivityLogsApi(params) {
+  const { data } = await http.get('/admin/activity-logs', { params })
+  return data
+}

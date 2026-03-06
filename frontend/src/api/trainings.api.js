@@ -29,3 +29,8 @@ export async function updateTrainingApi(id, payload) {
   const { data } = await http.patch(`/coach/trainings/${id}`, payload)
   return data
 }
+
+export async function updateTrainingStatusApi(id, status) {
+  const { data } = await http.patch(`/trainings/${id}/status`, { status })
+  return data
+}

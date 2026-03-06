@@ -14,7 +14,6 @@ class AthleteFactory extends Factory
 
     public function definition(): array
     {
-        // user_id и coach_id будем задавать вручную при создании
         return [
             'initial_weight' => fake()->randomFloat(1, 50, 110),
             'height' => fake()->randomFloat(1, 155, 205),

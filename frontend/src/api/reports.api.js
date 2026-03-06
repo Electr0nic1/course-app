@@ -9,3 +9,8 @@ export async function getCoachReportApi(params) {
   const { data } = await http.get('/coach/reports', { params })
   return data
 }
+
+export async function listCoachAthletesApi(params) {
+  const { data } = await http.get('/coach/athletes', { params })
+  return data
+}

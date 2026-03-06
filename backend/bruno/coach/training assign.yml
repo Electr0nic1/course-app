@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{api-host}}/coach/trainings/26/assign"
+  url: "{{api-host}}/coach/trainings/16/assign"
   body:
     type: json
     data: |

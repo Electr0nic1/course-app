@@ -11,7 +11,7 @@ http:
     data: |
       {
         "full_name": "Test Athlete User",
-        "email": "admin@test.com",
+        "email": "admi22n@test.com",
         "password": "password",
         "birth_date": "2000-01-01",
         "gender": "male",

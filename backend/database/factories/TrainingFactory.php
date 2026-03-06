@@ -19,7 +19,6 @@ class TrainingFactory extends Factory
 
         return [
             'training_type_id' => $typeId,
-            // coach_id зададим вручную
             'date' => fake()->dateTimeBetween('-14 days', '+14 days'),
             'duration_minutes' => fake()->numberBetween(20, 120),
             'description' => fake()->optional()->sentence(),

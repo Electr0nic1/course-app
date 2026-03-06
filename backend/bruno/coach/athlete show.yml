@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{api-host}}/coach/athletes/6"
+  url: "{{api-host}}/coach/athletes/9"
   auth: inherit
 
 settings:

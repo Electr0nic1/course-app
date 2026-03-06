@@ -14,14 +14,12 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        /** @var User|null $user */
         $user = User::query()->where('email', $data['email'])->first();
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 422);
         }
 
-        // one active token per login device name
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
@@ -48,7 +46,6 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         if ($user) {
-            // revoke current token
             $user->currentAccessToken()?->delete();
         }
 

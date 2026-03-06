@@ -18,7 +18,6 @@ class AthleteController extends Controller
         }
 
         $items = Athlete::query()
-            // athletes.coach_id хранит coaches.user_id
             ->where('coach_id', $coach->user_id)
             ->with('user')
             ->orderBy('user_id')
@@ -53,7 +52,6 @@ class AthleteController extends Controller
         }
 
         $items = SelfControl::query()
-            // self_controls.athlete_id хранит athletes.user_id
             ->where('athlete_id', $athlete->user_id)
             ->orderByDesc('date')
             ->paginate(20);

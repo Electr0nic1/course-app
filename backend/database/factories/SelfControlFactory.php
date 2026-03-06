@@ -22,7 +22,6 @@ class SelfControlFactory extends Factory
             'body_weight' => fake()->randomFloat(1, 50, 110),
             'feeling' => fake()->numberBetween(1, 10),
             'description' => fake()->optional()->text(120),
-            // athlete_id зададим вручную
         ];
     }
 }

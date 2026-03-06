@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('athlete_training', function (Blueprint $table) {
             $table->id();
-
             $table->enum('status', ['assigned', 'completed', 'skipped'])->default('assigned');
 
-            // athlete_id хранит athletes.user_id
             $table->foreignId('athlete_id')
                 ->references('user_id')->on('athletes')
                 ->cascadeOnDelete();

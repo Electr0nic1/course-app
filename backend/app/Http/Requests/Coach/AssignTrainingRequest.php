@@ -24,7 +24,6 @@ class AssignTrainingRequest extends FormRequest
         return [
             'athlete_ids' => ['required', 'array', 'min:1'],
             'athlete_ids.*' => ['integer', 'distinct', 'exists:athletes,user_id'],
-            // опционально можно передать общий статус назначения
             'status' => ['sometimes', 'in:assigned,completed,skipped'],
         ];
     }

@@ -20,8 +20,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('feeling');
             $table->decimal('body_weight', 5, 1)->unsigned();
             $table->string('description', 1000)->nullable();
-
-            // self_controls.athlete_id -> athletes.user_id
+            
             $table->foreignId('athlete_id')
                 ->references('user_id')->on('athletes')
                 ->cascadeOnDelete();

@@ -44,14 +44,12 @@ class TrainingController extends Controller
     {
         $this->authorize('view', $training);
 
-        // Для athlete полезно вернуть статус из pivot (assigned/completed/skipped)
         $user = $request->user();
         $athleteUserId = (int) $user->id;
 
         $training->load([
             'trainingType',
             'coach.user',
-            // оставляем только текущего спортсмена в athletes, чтобы не светить остальных
             'athletes' => function ($q) use ($athleteUserId) {
                 $q->where('athletes.user_id', $athleteUserId);
             },

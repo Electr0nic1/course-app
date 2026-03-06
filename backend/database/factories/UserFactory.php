@@ -19,7 +19,6 @@ class UserFactory extends Factory
 
     public function definition(): array
     {
-        // По умолчанию создаём athlete (если роль есть)
         $athleteRoleId = Role::where('title', 'athlete')->value('id');
 
         return [

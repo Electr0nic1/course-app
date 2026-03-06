@@ -25,7 +25,6 @@ class RoleMiddleware
             abort(403, 'Role not set.');
         }
 
-        // allow multiple roles: role:admin,coach
         if (!in_array($roleName, $roles, true)) {
             abort(403, 'Forbidden.');
         }

@@ -16,7 +16,6 @@ class StoreAthleteProfileRequest extends FormRequest
         return [
             'initial_weight' => ['required', 'numeric', 'min:20', 'max:250'],
             'height' => ['required', 'numeric', 'min:80', 'max:250'],
-            // если ты хочешь назначать тренера сразу:
             'coach_id' => ['nullable', 'integer', 'exists:coaches,user_id'],
         ];
     }

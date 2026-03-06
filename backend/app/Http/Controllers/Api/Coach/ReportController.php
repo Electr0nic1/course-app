@@ -19,13 +19,11 @@ class ReportController extends Controller
 
         $data = $request->validated();
 
-        // ВАЖНО: ожидаем, что athlete_id в запросе = athletes.user_id (то есть users.id спортсмена)
         $athlete = Athlete::query()
             ->with('user')
-            ->whereKey($data['athlete_id']) // whereKey учитывает primaryKey модели (user_id)
+            ->whereKey($data['athlete_id'])
             ->firstOrFail();
 
-        // athletes.coach_id хранит coaches.user_id
         if ((int)$athlete->coach_id !== (int)$coach->user_id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -34,7 +32,6 @@ class ReportController extends Controller
         $to = $data['to'];
 
         $q = SelfControl::query()
-            // self_controls.athlete_id хранит athletes.user_id
             ->where('athlete_id', $athlete->user_id)
             ->whereBetween('date', [$from, $to]);
 
@@ -60,7 +57,6 @@ class ReportController extends Controller
 
         return response()->json([
             'athlete' => [
-                // чтобы не путаться, отдаём user_id как основной идентификатор спортсмена
                 'id' => $athlete->user_id,
                 'full_name' => $athlete->user?->full_name,
             ],

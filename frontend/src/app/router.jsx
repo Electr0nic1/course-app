@@ -11,6 +11,7 @@ import { ReportsPage } from '../pages/ReportsPage.jsx'
 import { UsersPage } from '../pages/UsersPage.jsx'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage.jsx'
 import { NotFoundPage } from '../pages/NotFoundPage.jsx'
+import { AdminActivityLogsPage } from '../pages/AdminActivityLogsPage.jsx'
 
 import { PublicOnlyRoute } from '../components/PublicOnlyRoute.jsx'
 
@@ -62,6 +63,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole allow={['admin']}>
             <UsersPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: 'admin/activity-logs',
+        element: (
+          <RequireRole allow={['admin']}>
+            <AdminActivityLogsPage />
           </RequireRole>
         ),
       },

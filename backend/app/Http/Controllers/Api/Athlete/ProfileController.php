@@ -35,10 +35,9 @@ class ProfileController extends Controller
 
         $data = $request->validated();
 
-        // PK=user_id
         $athlete = Athlete::create([
             'user_id' => $user->id,
-            'coach_id' => $data['coach_id'] ?? null,     // можно null, если не назначаем сразу
+            'coach_id' => $data['coach_id'] ?? null,
             'initial_weight' => $data['initial_weight'],
             'height' => $data['height'],
         ]);

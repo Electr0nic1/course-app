@@ -36,7 +36,6 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
-        // если пароль передали — он захэшится через casts password => hashed
         $user->update($data);
 
         return response()->json($user->load('role'));

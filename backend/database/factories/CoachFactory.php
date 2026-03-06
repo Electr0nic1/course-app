@@ -14,7 +14,6 @@ class CoachFactory extends Factory
 
     public function definition(): array
     {
-        // user_id будет задан вручную (потому что PK=user_id)
         return [
             'work_experience' => fake()->numberBetween(1, 25),
         ];

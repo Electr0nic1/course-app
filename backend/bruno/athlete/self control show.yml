@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{api-host}}/athlete/self-controls/121"
+  url: "{{api-host}}/athlete/self-controls/122"
   auth: inherit
 
 settings:

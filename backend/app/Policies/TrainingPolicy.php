@@ -30,12 +30,10 @@ class TrainingPolicy
     {
         $role = $user->role?->title;
 
-        // coach → только свои тренировки
         if ($role === 'coach') {
             return (int)$training->coach_id === (int)($user->coach?->user_id ?? 0);
         }
 
-        // admin → всё
         if ($role === 'admin') {
             return true;
         }
@@ -52,19 +50,15 @@ class TrainingPolicy
     {
         $role = $user->role?->title;
 
-        // admin → всё
         if ($role === 'admin') {
             return true;
         }
 
-        // coach → только свои
         if ($role === 'coach') {
             return (int)$training->coach_id === (int)($user->coach?->user_id ?? 0);
         }
 
-        // athlete → только назначенные ему (pivot athlete_training.athlete_id == athletes.user_id == users.id)
         if ($role === 'athlete') {
-            // при твоей схеме athlete key = user.id
             $athleteUserId = (int) $user->id;
 
             return $training->athletes()

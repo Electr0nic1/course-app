@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{api-host}}/coach/reports?athlete_id=6&from=2026-01-01&to=2026-02-10"
+  url: "{{api-host}}/coach/reports?athlete_id=9&from=2026-01-01&to=2026-02-10"
   params:
     - name: athlete_id
-      value: "6"
+      value: "9"
       type: query
     - name: from
       value: 2026-01-01

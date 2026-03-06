@@ -11,7 +11,7 @@ import {
   Space,
   Table,
   Typography,
-  Tag
+  Tag,
 } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -19,10 +19,13 @@ import {
   createTrainingApi,
   listAthleteTrainingsApi,
   listCoachTrainingsApi,
+  updateTrainingStatusApi,
 } from '../api/trainings.api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNotify } from '../hooks/useNotify.js'
-import { TRAINING_STATUS_LABELS } from '../constants/trainingStatus.js'
+import { TRAINING_STATUS } from '../constants/trainingStatus.js'
+
+const { RangePicker } = DatePicker
 
 function normalizeList(data) {
   if (Array.isArray(data)) return data
@@ -38,11 +41,16 @@ export function TrainingsPage() {
 
   const role = user?.role
   const [open, setOpen] = useState(false)
-  const [range, setRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')])
+  const [range, setRange] = useState([
+    dayjs().startOf('month'),
+    dayjs().endOf('month'),
+  ])
 
-  // Для тренера: простой фильтр по athleteId
   const [athleteId, setAthleteId] = useState(null)
 
+  // ========================
+  // Query
+  // ========================
   const queryKey = useMemo(
     () => [
       'trainings',
@@ -62,14 +70,27 @@ export function TrainingsPage() {
         to: range?.[1]?.format('YYYY-MM-DD'),
       }
 
-      if (role === 'athlete') return listAthleteTrainingsApi(params)
-      if (role === 'coach') return listCoachTrainingsApi({ ...params, athleteId: athleteId ?? undefined })
+      if (role === 'athlete') {
+        return listAthleteTrainingsApi(params)
+      }
+
+      if (role === 'coach') {
+        return listCoachTrainingsApi({
+          ...params,
+          athleteId: athleteId ?? undefined,
+        })
+      }
+
       return []
     },
+    enabled: !!role,
   })
 
   const items = useMemo(() => normalizeList(data), [data])
 
+  // ========================
+  // Create training
+  // ========================
   const createMutation = useMutation({
     mutationFn: (payload) => createTrainingApi(payload),
     onSuccess: async () => {
@@ -77,27 +98,106 @@ export function TrainingsPage() {
       setOpen(false)
       await qc.invalidateQueries({ queryKey: ['trainings'] })
     },
-    onError: (e) => msg.error(e?.message ?? 'Не удалось создать тренировку'),
+    onError: (e) =>
+      msg.error(e?.message ?? 'Не удалось создать тренировку'),
   })
 
+  // ========================
+  // Update status
+  // ========================
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }) =>
+      updateTrainingStatusApi(id, status),
+    onSuccess: async () => {
+      msg.success('Статус обновлён')
+      await qc.invalidateQueries({ queryKey: ['trainings'] })
+    },
+    onError: (e) =>
+      msg.error(e?.message ?? 'Не удалось обновить статус'),
+  })
+
+  const statusFilters = Object.entries(TRAINING_STATUS).map(
+    ([value, meta]) => ({
+      text: meta.label,
+      value,
+    }),
+  )
+
+  // ========================
+  // Table columns
+  // ========================
   const columns = [
     {
       title: 'Дата',
       dataIndex: 'date',
       key: 'date',
-      render: (v) => (v ? dayjs(v).format('DD.MM.YYYY HH:mm') : '—'),
+      sorter: (a, b) =>
+        dayjs(a.date).valueOf() - dayjs(b.date).valueOf(),
+      render: (v) =>
+        v ? dayjs(v).format('DD.MM.YYYY HH:mm') : '—',
     },
-    { title: 'Длительность (мин)', dataIndex: 'duration_minutes', key: 'duration_minutes' },
+    {
+      title: 'Длительность (мин)',
+      dataIndex: 'duration_minutes',
+      key: 'duration_minutes',
+    },
     {
       title: 'Статус',
+      dataIndex: 'status',
       key: 'status',
-      render: (_, r) => {
-        const s = TRAINING_STATUS_LABELS[r.status]
-        if (!s) return '—'
-        return <Tag color={s.color}>{s.label}</Tag>
-      },
+      filters: statusFilters,
+      onFilter: (value, record) =>
+        record.status === value,
+      render: (status) => (
+        <Tag color={TRAINING_STATUS[status]?.color}>
+          {TRAINING_STATUS[status]?.label ?? status}
+        </Tag>
+      ),
     },
-    { title: 'Описание', dataIndex: 'description', key: 'description', ellipsis: true },
+    {
+      title: 'Описание',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (v) => v ?? '—',
+    },
+    {
+      title: 'Действия',
+      key: 'actions',
+      render: (_, r) => (
+        <Space>
+          <Button
+            size="small"
+            type="primary"
+            onClick={() =>
+              statusMutation.mutate({
+                id: r.id,
+                status: 'done',
+              })
+            }
+            disabled={r.status === 'done'}
+            loading={statusMutation.isPending}
+          >
+            Выполнено
+          </Button>
+
+          <Button
+            size="small"
+            danger
+            onClick={() =>
+              statusMutation.mutate({
+                id: r.id,
+                status: 'canceled',
+              })
+            }
+            disabled={r.status === 'canceled'}
+            loading={statusMutation.isPending}
+          >
+            Отменить
+          </Button>
+        </Space>
+      ),
+    },
   ]
 
   return (
@@ -106,7 +206,12 @@ export function TrainingsPage() {
         title="Тренировки"
         extra={
           <Space wrap>
-            <DatePicker.RangePicker value={range} onChange={(v) => setRange(v)} allowClear={false} />
+            <RangePicker
+              value={range}
+              onChange={(v) => setRange(v)}
+              allowClear={false}
+            />
+
             {role === 'coach' && (
               <InputNumber
                 min={1}
@@ -115,8 +220,13 @@ export function TrainingsPage() {
                 onChange={setAthleteId}
               />
             )}
+
             {role === 'coach' && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setOpen(true)}
+              >
                 Создать
               </Button>
             )}
@@ -130,7 +240,9 @@ export function TrainingsPage() {
         </Typography.Paragraph>
 
         <Table
-          rowKey={(r) => r.id ?? `${r.date}-${r.duration_minutes}`}
+          rowKey={(r) =>
+            r.id ?? `${r.date}-${r.duration_minutes}`
+          }
           columns={columns}
           dataSource={items}
           loading={isLoading}
@@ -143,14 +255,24 @@ export function TrainingsPage() {
           open={open}
           onClose={() => setOpen(false)}
           submitting={createMutation.isPending}
-          onSubmit={(payload) => createMutation.mutate(payload)}
+          onSubmit={(payload) =>
+            createMutation.mutate(payload)
+          }
         />
       )}
     </div>
   )
 }
 
-function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
+// ========================
+// Create modal
+// ========================
+function CreateTrainingModal({
+  open,
+  onClose,
+  onSubmit,
+  submitting,
+}) {
   const [form] = Form.useForm()
 
   return (
@@ -173,13 +295,17 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
 
             onSubmit({
               athleteIds,
-              date: values.date?.toISOString?.() ?? values.date,
-              duration_minutes: values.duration_minutes,
+              date:
+                values.date?.toISOString?.() ??
+                values.date,
+              duration_minutes:
+                values.duration_minutes,
               description: values.description,
-              training_type_id: values.training_type_id ?? null,
+              training_type_id:
+                values.training_type_id ?? null,
             })
           })
-          .catch(() => { })
+          .catch(() => {})
       }}
       destroyOnClose
     >
@@ -195,25 +321,66 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
         <Form.Item
           label="Athlete IDs (через запятую)"
           name="athleteIds"
-          rules={[{ required: true, message: 'Укажите хотя бы одного спортсмена' }]}
+          rules={[
+            {
+              required: true,
+              message:
+                'Укажите хотя бы одного спортсмена',
+            },
+          ]}
         >
           <Input placeholder="1,2,3" />
         </Form.Item>
-        <Form.Item label="Дата" name="date" rules={[{ required: true, message: 'Укажите дату' }]}>
-          <DatePicker showTime style={{ width: '100%' }} />
+
+        <Form.Item
+          label="Дата"
+          name="date"
+          rules={[
+            {
+              required: true,
+              message: 'Укажите дату',
+            },
+          ]}
+        >
+          <DatePicker
+            showTime
+            style={{ width: '100%' }}
+          />
         </Form.Item>
+
         <Form.Item
           label="Длительность (мин)"
           name="duration_minutes"
-          rules={[{ required: true, message: 'Укажите длительность' }]}
+          rules={[
+            {
+              required: true,
+              message:
+                'Укажите длительность',
+            },
+          ]}
         >
-          <InputNumber min={1} max={600} style={{ width: '100%' }} />
+          <InputNumber
+            min={1}
+            max={600}
+            style={{ width: '100%' }}
+          />
         </Form.Item>
-        <Form.Item label="Training type id" name="training_type_id">
-          <InputNumber min={1} style={{ width: '100%' }} />
+
+        <Form.Item
+          label="Training type id"
+          name="training_type_id"
+        >
+          <InputNumber
+            min={1}
+            style={{ width: '100%' }}
+          />
         </Form.Item>
+
         <Form.Item label="Описание" name="description">
-          <Input.TextArea rows={3} maxLength={512} />
+          <Input.TextArea
+            rows={3}
+            maxLength={512}
+          />
         </Form.Item>
       </Form>
     </Modal>
