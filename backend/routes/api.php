@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('trainings', [AthleteTrainingController::class, 'index']);
         Route::get('trainings/{training}', [AthleteTrainingController::class, 'show']);
+        Route::patch('trainings/{trainingId}/status', [AthleteTrainingController::class, 'updateStatus']);
     });
 
     /*

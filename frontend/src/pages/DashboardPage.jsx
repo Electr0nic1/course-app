@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import { dashboardSummaryApi } from '../api/dashboard.api'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ROLE_LABELS } from '../constants/roles'
-import { TRAINING_STATUS } from '../constants/trainingStatus'
+import { TRAINING_PARTICIPATION_STATUS } from '../constants/trainingParticipationStatus.js'
 
 function percent(done, total) {
   if (!total) return 0
@@ -115,8 +115,8 @@ export function DashboardPage() {
                   </Typography.Text>
                   <div>
                     Статус:{' '}
-                    <Tag color={TRAINING_STATUS[nearest.status]?.color}>
-                      {TRAINING_STATUS[nearest.status]?.label ?? nearest.status}
+                    <Tag color={TRAINING_PARTICIPATION_STATUS[nearest.status]?.color}>
+                      {TRAINING_PARTICIPATION_STATUS[nearest.status]?.label ?? nearest.status}
                     </Tag>
                   </div>
                 </Space>

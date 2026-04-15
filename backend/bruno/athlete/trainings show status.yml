@@ -1,17 +1,16 @@
 info:
-  name: training assign
+  name: trainings show status
   type: http
-  seq: 9
+  seq: 8
 
 http:
-  method: POST
-  url: "{{api-host}}/coach/trainings/30/assign"
+  method: PATCH
+  url: "{{api-host}}/athlete/trainings/10/status"
   body:
     type: json
-    data: |
+    data: |-
       {
-        "athlete_ids": [5],
-        "status": "assigned"
+        "status": "completed"
       }
   auth: inherit
 

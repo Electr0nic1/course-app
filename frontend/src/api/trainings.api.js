@@ -30,7 +30,21 @@ export async function updateTrainingApi(id, payload) {
   return data
 }
 
+export async function assignTrainingApi(trainingId, athleteIds) {
+  const { data } = await http.post(`/coach/trainings/${trainingId}/assign`, {
+    athleteIds,
+  })
+  return data
+}
+
 export async function updateTrainingStatusApi(id, status) {
   const { data } = await http.patch(`/trainings/${id}/status`, { status })
+  return data
+}
+
+export async function updateAthleteTrainingStatusApi(trainingId, status) {
+  const { data } = await http.patch(`/athlete/trainings/${trainingId}/status`, {
+    status,
+  })
   return data
 }

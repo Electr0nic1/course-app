@@ -168,7 +168,8 @@ function DiaryCreateModal({ open, onClose, onSubmit, submitting }) {
         >
           <InputNumber min={0} max={200} style={{ width: '100%' }} />
         </Form.Item>
-        <Form.Item label="Масса тела" name="body_weight">
+        <Form.Item label="Масса тела" name="body_weight"
+        rules={[{ required: true, message: 'Укажите массу тела' }]}>
           <InputNumber min={0} max={200} step={0.1} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item

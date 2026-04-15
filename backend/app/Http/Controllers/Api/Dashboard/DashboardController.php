@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\SelfControl;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -28,20 +29,31 @@ class DashboardController extends Controller
             }
 
             $trainings = $athlete->trainings()
-                ->select('trainings.id', 'trainings.date', 'trainings.duration_minutes', 'trainings.description')
-                ->withPivot('status')
+                ->select(
+                    'trainings.id',
+                    'trainings.date',
+                    'trainings.duration_minutes',
+                    'trainings.description'
+                )
                 ->orderBy('trainings.date')
                 ->get();
 
-            $nearest = $trainings->first(function ($t) {
-                return ($t->pivot?->status ?? null) === 'planned';
-            });
+            $nearest = $trainings
+                ->filter(function ($t) {
+                    return ($t->pivot?->status ?? null) === 'assigned'
+                        && !empty($t->date)
+                        && Carbon::parse($t->date)->greaterThanOrEqualTo(today());
+                })
+                ->sortBy(function ($t) {
+                    return Carbon::parse($t->date)->timestamp;
+                })
+                ->first();
 
             $counts = [
                 'total' => $trainings->count(),
-                'planned' => $trainings->where('pivot.status', 'planned')->count(),
-                'done' => $trainings->where('pivot.status', 'done')->count(),
-                'canceled' => $trainings->where('pivot.status', 'canceled')->count(),
+                'planned' => $trainings->filter(fn($t) => ($t->pivot?->status ?? null) === 'assigned')->count(),
+                'done' => $trainings->filter(fn($t) => ($t->pivot?->status ?? null) === 'completed')->count(),
+                'canceled' => $trainings->filter(fn($t) => ($t->pivot?->status ?? null) === 'skipped')->count(),
             ];
 
             $nearestDto = null;
@@ -51,7 +63,7 @@ class DashboardController extends Controller
                     'date' => $nearest->date,
                     'duration_minutes' => $nearest->duration_minutes,
                     'description' => $nearest->description,
-                    'status' => $nearest->pivot->status,
+                    'status' => $nearest->pivot?->status,
                 ];
             }
 
@@ -59,7 +71,13 @@ class DashboardController extends Controller
                 ->where('athlete_id', $athlete->user_id)
                 ->orderByDesc('date')
                 ->limit(30)
-                ->get(['date','heart_rate','body_weight','systolic_pressure','diastolic_pressure']);
+                ->get([
+                    'date',
+                    'heart_rate',
+                    'body_weight',
+                    'systolic_pressure',
+                    'diastolic_pressure',
+                ]);
 
             $result['trainings'] = [
                 'counts' => $counts,
@@ -75,7 +93,7 @@ class DashboardController extends Controller
                 ->join('trainings', 'trainings.id', '=', 'athlete_training.training_id')
                 ->where('trainings.coach_id', $user->id)
                 ->whereBetween('trainings.date', [now(), now()->addDays(7)])
-                ->where('athlete_training.status', 'planned')
+                ->where('athlete_training.status', 'assigned')
                 ->count();
 
             $result['coach'] = [
