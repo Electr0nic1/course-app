@@ -11,6 +11,7 @@ import {
   Space,
   Table,
   Typography,
+  Select
 } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -23,6 +24,29 @@ function normalizeList(data) {
   if (Array.isArray(data?.data)) return data.data
   return []
 }
+
+const FEELING_RANGES = [
+  { from: 1, to: 2, label: 'очень плохо' },
+  { from: 3, to: 4, label: 'ниже среднего' },
+  { from: 5, to: 5, label: 'нормально' },
+  { from: 6, to: 7, label: 'хорошо' },
+  { from: 8, to: 9, label: 'отлично' },
+  { from: 10, to: 10, label: 'супер отлично' },
+]
+
+function getFeelingLabel(v) {
+  const item = FEELING_RANGES.find(r => v >= r.from && v <= r.to)
+  return item?.label ?? `${v}/10`
+}
+
+const feelingOptions = Array.from({ length: 10 }, (_, i) => {
+  const value = i + 1
+
+  return {
+    value,
+    label: `${value} — ${getFeelingLabel(value)}`,
+  }
+})
 
 export function DiaryPage() {
   const { msg } = useNotify()
@@ -44,7 +68,7 @@ export function DiaryPage() {
   const mutation = useMutation({
     mutationFn: (payload) => createSelfControlApi(payload),
     onSuccess: async () => {
-      msg.success('Запись сохранена')
+      msg.success('Запись сохранена', 100)
       setOpen(false)
       await qc.invalidateQueries({ queryKey: ['self-controls'] })
     },
@@ -58,11 +82,14 @@ export function DiaryPage() {
       key: 'date',
       render: (v) => (v ? dayjs(v).format('DD.MM.YYYY HH:mm') : '—'),
     },
-    { title: 'Пульс', dataIndex: 'heart_rate', key: 'heart_rate' },
-    { title: 'Сист.', dataIndex: 'systolic_pressure', key: 'systolic_pressure' },
-    { title: 'Диаст.', dataIndex: 'diastolic_pressure', key: 'diastolic_pressure' },
-    { title: 'Вес', dataIndex: 'body_weight', key: 'body_weight' },
-    { title: 'Самочувствие', dataIndex: 'feeling', key: 'feeling' },
+    { title: 'Пульс (уд/мин)', dataIndex: 'heart_rate', key: 'heart_rate' },
+    { title: 'Давление (верхнее)', dataIndex: 'systolic_pressure', key: 'systolic_pressure' },
+    { title: 'Давление (нижнее)', dataIndex: 'diastolic_pressure', key: 'diastolic_pressure' },
+    { title: 'Вес (кг)', dataIndex: 'body_weight', key: 'body_weight' },
+    {
+      title: 'Самочувствие (1–10)', dataIndex: 'feeling', key: 'feeling',
+      render: (v) => (v ? `${v}/10 — ${getFeelingLabel(v)}` : '—')
+    },
     {
       title: 'Заметки',
       dataIndex: 'description',
@@ -131,7 +158,7 @@ function DiaryCreateModal({ open, onClose, onSubmit, submitting }) {
             }
             onSubmit(payload)
           })
-          .catch(() => {})
+          .catch(() => { })
       }}
       destroyOnClose
     >
@@ -155,29 +182,33 @@ function DiaryCreateModal({ open, onClose, onSubmit, submitting }) {
           <InputNumber min={0} max={250} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
-          label="Систолическое давление"
+          label="Верхнее давление"
+          extra="Например: 120"
           name="systolic_pressure"
-          rules={[{ required: true, message: 'Укажите систолическое давление' }]}
+          rules={[{ required: true, message: 'Укажите верхнее давление' }]}
         >
           <InputNumber min={0} max={300} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
-          label="Диастолическое давление"
+          label="Нижнее давление"
+          extra="Например: 80"
           name="diastolic_pressure"
-          rules={[{ required: true, message: 'Укажите диастолическое давление' }]}
+          rules={[{ required: true, message: 'Укажите нижнее давление' }]}
         >
           <InputNumber min={0} max={200} style={{ width: '100%' }} />
         </Form.Item>
-        <Form.Item label="Масса тела" name="body_weight"
-        rules={[{ required: true, message: 'Укажите массу тела' }]}>
+        <Form.Item label="Масса тела (в кг)"
+          extra="Измеряется утром после сна" name="body_weight"
+          rules={[{ required: true, message: 'Укажите массу тела' }]}>
           <InputNumber min={0} max={200} step={0.1} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
-          label="Самочувствие (1–10)"
+          label="Самочувствие"
+          extra="Оцените своё состояние от 1 (очень плохо) до 10 (отлично)"
           name="feeling"
           rules={[{ required: true, message: 'Укажите самочувствие' }]}
         >
-          <InputNumber min={1} max={10} style={{ width: '100%' }} />
+          <Select options={feelingOptions} />
         </Form.Item>
         <Form.Item label="Заметки" name="description">
           <Input.TextArea rows={3} maxLength={1000} />

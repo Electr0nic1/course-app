@@ -28,6 +28,12 @@ function toNumberOrNull(v) {
   return Number.isFinite(n) ? n : null
 }
 
+function roundToTenth(v) {
+  const n = toNumberOrNull(v)
+  if (n === null) return '—'
+  return Number(n).toFixed(1)
+}
+
 const GENDER_LABEL = {
   male: 'Мужской',
   female: 'Женский',
@@ -113,14 +119,14 @@ export function ReportsPage() {
       sorter: (a, b) => dayjs(a?.date).valueOf() - dayjs(b?.date).valueOf(),
       defaultSortOrder: 'descend',
     },
-    { title: 'Пульс', dataIndex: 'heart_rate', key: 'heart_rate', render: (v) => v ?? '—' },
+    { title: 'Пульс (уд/мин)', dataIndex: 'heart_rate', key: 'heart_rate', render: (v) => v ?? '—' },
     {
-      title: 'Давление',
+      title: 'Артериальное давление',
       key: 'bp',
       render: (_, r) => `${r?.systolic_pressure ?? '—'}/${r?.diastolic_pressure ?? '—'}`,
     },
     {
-      title: 'Вес',
+      title: 'Вес (кг)',
       dataIndex: 'body_weight',
       key: 'body_weight',
       render: (v) => {
@@ -128,7 +134,7 @@ export function ReportsPage() {
         return n === null ? '—' : n
       },
     },
-    { title: 'Самочувствие', dataIndex: 'feeling', key: 'feeling', render: (v) => v ?? '—' },
+    { title: 'Самочувствие (1–10)', dataIndex: 'feeling', key: 'feeling', render: (v) => v ?? '—' },
   ]
 
   const loadingTop = athletesQuery.isLoading
@@ -183,10 +189,10 @@ export function ReportsPage() {
         ) : (
           <Row gutter={[16, 16]}>
             <Col xs={24} md={6}>
-              <Statistic title="ID" value={selectedAthlete.user_id ?? '—'} />
+              <Statistic title="ID спортсмена" value={selectedAthlete.user_id ?? '—'} />
             </Col>
             <Col xs={24} md={6}>
-              <Statistic title="Email" value={selectedAthlete.user?.email ?? '—'} />
+              <Statistic title="Электронная почта" value={selectedAthlete.user?.email ?? '—'} />
             </Col>
             <Col xs={24} md={6}>
               <Statistic
@@ -208,7 +214,7 @@ export function ReportsPage() {
             </Col>
             <Col xs={24} md={6}>
               <Statistic
-                title="Начальный вес (кг)"
+                title="Вес при регистрации (кг)"
                 value={toNumberOrNull(selectedAthlete.initial_weight) ?? '—'}
               />
             </Col>
@@ -224,29 +230,29 @@ export function ReportsPage() {
         ) : (
           <Row gutter={[16, 16]}>
             <Col xs={24} md={6}>
-              <Statistic title="Записей" value={stats?.count ?? 0} loading={loadingReport} />
+              <Statistic title="Количество записей" value={stats?.count ?? 0} loading={loadingReport} />
             </Col>
             <Col xs={24} md={6}>
-              <Statistic title="Средний пульс" value={stats?.avg_heart_rate ?? '—'} loading={loadingReport} />
+              <Statistic title="Средний пульс" value={roundToTenth(stats?.avg_heart_rate)} loading={loadingReport} />
             </Col>
             <Col xs={24} md={6}>
               <Statistic
-                title="Среднее давление"
+                title="Среднее артериальное давление"
                 value={
                   stats
-                    ? `${stats?.avg_systolic_pressure ?? '—'}/${stats?.avg_diastolic_pressure ?? '—'}`
+                    ? `${roundToTenth(stats?.avg_systolic_pressure)}/${roundToTenth(stats?.avg_diastolic_pressure)}`
                     : '—'
                 }
                 loading={loadingReport}
               />
             </Col>
             <Col xs={24} md={6}>
-              <Statistic title="Средний вес" value={stats?.avg_body_weight ?? '—'} loading={loadingReport} />
+              <Statistic title="Средний вес" value={roundToTenth(stats?.avg_body_weight)} loading={loadingReport} />
             </Col>
             <Col xs={24} md={6}>
               <Statistic
-                title="Среднее самочувствие"
-                value={stats?.avg_feeling ?? '—'}
+                title="Средняя оценка самочувствия"
+                value={roundToTenth(stats?.avg_feeling)}
                 suffix={stats?.avg_feeling != null ? '/10' : undefined}
                 loading={loadingReport}
               />

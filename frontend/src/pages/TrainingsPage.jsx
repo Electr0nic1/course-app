@@ -12,6 +12,8 @@ import {
   Table,
   Typography,
   Tag,
+  Select,
+  Spin,
 } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -23,10 +25,12 @@ import {
   updateTrainingStatusApi,
   updateAthleteTrainingStatusApi,
 } from '../api/trainings.api.js'
+import { listCoachAthletesApi } from '../api/reports.api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNotify } from '../hooks/useNotify.js'
 import { TRAINING_STATUS } from '../constants/trainingStatus.js'
 import { TRAINING_PARTICIPATION_STATUS } from '../constants/trainingParticipationStatus.js'
+import { TRAINING_TYPES } from '../constants/trainingTypes.js'
 
 const { RangePicker } = DatePicker
 
@@ -49,6 +53,26 @@ export function TrainingsPage() {
     dayjs().endOf('month'),
   ])
   const [athleteId, setAthleteId] = useState(null)
+
+  const athletesQuery = useQuery({
+    queryKey: ['coach-athletes'],
+    queryFn: () => listCoachAthletesApi({ page: 1, per_page: 200 }),
+    enabled: role === 'coach',
+  })
+
+  const athletesItems = useMemo(
+    () => normalizeList(athletesQuery.data),
+    [athletesQuery.data],
+  )
+
+  const athleteOptions = useMemo(() => {
+    return athletesItems.map((a) => ({
+      value: a.user_id,
+      label: a?.user?.full_name
+        ? `${a.user.full_name} (ID ${a.user_id})`
+        : `ID ${a.user_id}`,
+    }))
+  }, [athletesItems])
 
   const queryKey = useMemo(
     () => [
@@ -84,6 +108,15 @@ export function TrainingsPage() {
     },
     enabled: !!role,
   })
+
+  React.useEffect(() => {
+    if (role !== 'coach') return
+    if (athleteId) return
+
+    if (athleteOptions.length) {
+      setAthleteId(athleteOptions[0].value)
+    }
+  }, [role, athleteOptions, athleteId])
 
   const items = useMemo(() => normalizeList(data), [data])
 
@@ -136,7 +169,7 @@ export function TrainingsPage() {
   const athleteStatusMutation = useMutation({
     mutationFn: ({ id, status }) => updateAthleteTrainingStatusApi(id, status),
     onSuccess: async () => {
-      msg.success('Статус участия обновлён')
+      msg.success('Статус участия обновлён', 100)
       await qc.invalidateQueries({ queryKey: ['trainings'] })
     },
     onError: (e) => {
@@ -166,6 +199,22 @@ export function TrainingsPage() {
       key: 'duration_minutes',
     },
     {
+      title: 'Тип',
+      dataIndex: 'training_type_id',
+      key: 'training_type_id',
+      render: (typeId) => {
+        const type = Object.values(TRAINING_TYPES).find(
+          (x) => x.id === typeId,
+        )
+
+        return (
+          <Tag>
+            {type?.label ?? '—'}
+          </Tag>
+        )
+      },
+    },
+    {
       title: 'Статус',
       dataIndex: 'status',
       key: 'status',
@@ -177,6 +226,80 @@ export function TrainingsPage() {
         </Tag>
       ),
     },
+    // {
+    //   title: 'Спортсмены',
+    //   key: 'athletes',
+    //   render: (_, record) => {
+    //     const athletes = record.athletes ?? []
+
+    //     if (!athletes.length) {
+    //       return '—'
+    //     }
+
+    //     return (
+    //       <Space wrap>
+    //         {athletes.map((athlete) => (
+    //           <Tag key={athlete.id}>
+    //             {athlete?.user?.full_name ?? `ID ${athlete.id}`}
+    //           </Tag>
+    //         ))}
+    //       </Space>
+    //     )
+    //   },
+    // },
+    ...(role === 'coach'
+      ? [{
+        title: 'Выполнение',
+        key: 'progress',
+        width: 320,
+        render: (_, record) => {
+          const athletes = record.athletes ?? []
+
+          if (!athletes.length) return '—'
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {athletes.map((athlete) => {
+                const status = athlete?.pivot?.status
+
+                const config = {
+                  completed: {
+                    color: 'green',
+                    label: 'Выполнил',
+                  },
+                  skipped: {
+                    color: 'red',
+                    label: 'Пропустил',
+                  },
+                  assigned: {
+                    color: 'blue',
+                    label: 'Назначено',
+                  },
+                }
+
+                const current = config[status] ?? {
+                  color: 'default',
+                  label: status ?? '—',
+                }
+
+                return (
+                  <Tag
+                    color={current.color}
+                    key={athlete.id}
+                    style={{
+                      width: 'fit-content',
+                      margin: 0,
+                    }}
+                  >
+                    {athlete?.user?.full_name ?? `ID ${athlete.id}`} — {current.label}
+                  </Tag>
+                )
+              })}
+            </div>
+          )
+        },
+      }]
+      : []),
     {
       title: 'Описание',
       dataIndex: 'description',
@@ -278,11 +401,16 @@ export function TrainingsPage() {
             />
 
             {role === 'coach' && (
-              <InputNumber
-                min={1}
-                placeholder="athleteId"
+              <Select
+                style={{ minWidth: 320 }}
+                loading={athletesQuery.isLoading}
                 value={athleteId}
                 onChange={setAthleteId}
+                placeholder="Выберите спортсмена"
+                options={athleteOptions}
+                showSearch
+                optionFilterProp="label"
+                allowClear
               />
             )}
 
@@ -319,13 +447,14 @@ export function TrainingsPage() {
           onClose={() => setOpen(false)}
           submitting={createMutation.isPending}
           onSubmit={(payload) => createMutation.mutate(payload)}
+          athleteOptions={athleteOptions}
         />
       )}
     </div>
   )
 }
 
-function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
+function CreateTrainingModal({ open, onClose, onSubmit, submitting, athleteOptions }) {
   const [form] = Form.useForm()
 
   return (
@@ -351,7 +480,7 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
               date: values.date?.toISOString?.() ?? values.date,
               duration_minutes: values.duration_minutes,
               description: values.description,
-              training_type_id: values.training_type_id ?? null,
+              training_type_id: TRAINING_TYPES[values.training_type]?.id ?? null,
             })
           })
           .catch(() => { })
@@ -365,19 +494,26 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
         initialValues={{
           date: dayjs(),
           duration_minutes: 60,
+          training_type: 'cardio',
         }}
       >
         <Form.Item
-          label="Athlete IDs (через запятую)"
+          label="Спортсмены"
           name="athleteIds"
           rules={[
             {
               required: true,
-              message: 'Укажите хотя бы одного спортсмена',
+              message: 'Выберите хотя бы одного спортсмена',
             },
           ]}
         >
-          <Input placeholder="1,2,3" />
+          <Select
+            mode="multiple"
+            placeholder="Выберите спортсменов"
+            options={athleteOptions}
+            showSearch
+            optionFilterProp="label"
+          />
         </Form.Item>
 
         <Form.Item
@@ -405,11 +541,26 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting }) {
         >
           <InputNumber min={1} max={600} style={{ width: '100%' }} />
         </Form.Item>
-
-        <Form.Item label="Training type id" name="training_type_id">
-          <InputNumber min={1} style={{ width: '100%' }} />
+        <Form.Item
+          label="Тип тренировки"
+          name="training_type"
+          rules={[
+            {
+              required: true,
+              message: 'Выберите тип тренировки',
+            },
+          ]}
+        >
+          <Select
+            placeholder="Выберите тип"
+            options={Object.entries(TRAINING_TYPES).map(
+              ([value, meta]) => ({
+                value,
+                label: meta.label,
+              }),
+            )}
+          />
         </Form.Item>
-
         <Form.Item label="Описание" name="description">
           <Input.TextArea rows={3} maxLength={512} />
         </Form.Item>

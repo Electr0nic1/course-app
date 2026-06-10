@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             TrainingTypeSeeder::class,
         ]);
 
-        $admin = User::factory()->role('admin')->create([
+        User::factory()->role('admin')->create([
             'email' => 'admin@test.com',
             'full_name' => 'Admin User',
             'password' => Hash::make('password'),
@@ -30,50 +30,64 @@ class DatabaseSeeder extends Seeder
             ->role('coach')
             ->create();
 
-        $coaches = $coachUsers->map(function (User $u) {
-            return Coach::factory()->create([
-                'user_id' => $u->id, // PK=user_id
-            ]);
-        });
+        $coaches = $coachUsers->map(
+            fn(User $u) =>
+            Coach::factory()->create([
+                'user_id' => $u->id,
+            ])
+        );
+
+        $athletes = collect();
 
         $athleteUsers = User::factory()
             ->count(12)
             ->role('athlete')
             ->create();
 
-        $athletes = $athleteUsers->map(function (User $u) use ($coaches) {
-            $coach = $coaches->random();
+        $athleteUsers->each(function (User $u, $index) use ($coaches, &$athletes) {
 
-            return Athlete::factory()->create([
-                'user_id' => $u->id,         
-                'coach_id' => $coach->user_id, 
-            ]);
-        });
+            $coach = $coaches[$index % $coaches->count()];
 
-        $trainings = collect();
-        foreach ($coaches as $coach) {
-            $trainings = $trainings->merge(
-                Training::factory()->count(8)->create([
-                    'coach_id' => $coach->user_id, 
+            $athletes->push(
+                Athlete::factory()->create([
+                    'user_id' => $u->id,
+                    'coach_id' => $coach->user_id,
                 ])
             );
-        }
+        });
 
-        foreach ($trainings as $training) {
-            $pick = $athletes->random(rand(3, 6));
+        $coaches->each(function ($coach) use ($athletes) {
 
-            $attach = [];
-            foreach ($pick as $ath) {
-                $attach[$ath->user_id] = ['status' => 'assigned'];
+            $coachAthletes = $athletes->where('coach_id', $coach->user_id)->values();
+
+            $trainings = Training::factory()
+                ->count(8)
+                ->create([
+                    'coach_id' => $coach->user_id,
+                ]);
+
+            foreach ($trainings as $training) {
+
+                $count = min(rand(3, 6), $coachAthletes->count());
+
+                $pick = $coachAthletes->random($count);
+
+                $attach = [];
+
+                foreach ($pick as $ath) {
+                    $attach[$ath->user_id] = ['status' => 'assigned'];
+                }
+
+                $training->athletes()->attach($attach);
             }
+        });
 
-            $training->athletes()->attach($attach);
-        }
-
-        foreach ($athletes as $athlete) {
-            SelfControl::factory()->count(10)->create([
-                'athlete_id' => $athlete->user_id,
-            ]);
-        }
+        $athletes->each(function ($athlete) {
+            SelfControl::factory()
+                ->count(10)
+                ->create([
+                    'athlete_id' => $athlete->user_id,
+                ]);
+        });
     }
 }

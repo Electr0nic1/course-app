@@ -65,9 +65,9 @@ export function AppLayout() {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider breakpoint="lg" collapsedWidth="0">
         <div style={{ padding: 16 }}>
-          <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
+          {/* <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
             Athlete AИС
-          </Typography.Title>
+          </Typography.Title> */}
           <Typography.Text style={{ color: 'rgba(255,255,255,0.75)' }}>
             {user?.full_name ?? 'Пользователь'}
           </Typography.Text>

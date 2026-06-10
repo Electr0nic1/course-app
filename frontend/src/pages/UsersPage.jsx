@@ -47,7 +47,7 @@ export function UsersPage() {
   const createMutation = useMutation({
     mutationFn: (payload) => createUserApi(payload),
     onSuccess: async () => {
-      msg.success('Пользователь создан')
+      msg.success('Пользователь создан', 100)
       setOpen(false)
       await qc.invalidateQueries({ queryKey: ['admin-users'] })
     },
@@ -57,7 +57,7 @@ export function UsersPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => updateUserApi(id, payload),
     onSuccess: async () => {
-      msg.success('Пользователь обновлён')
+      msg.success('Пользователь обновлён', 100)
       setEditing(null)
       await qc.invalidateQueries({ queryKey: ['admin-users'] })
     },

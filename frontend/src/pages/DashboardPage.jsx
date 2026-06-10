@@ -33,17 +33,17 @@ export function DashboardPage() {
     return percent(done, total)
   }, [trainingsCounts])
 
-  const sc = data?.self_controls ?? []
+  const selfControlRecords  = data?.self_controls ?? []
   const chartData = useMemo(() => {
     // строим график пульса как пример
-    return sc
+    return selfControlRecords 
       .map((x) => ({
         date: dayjs(x.date).format('DD.MM'),
         heart_rate: x.heart_rate ?? null,
       }))
       .reverse()
       .filter((x) => x.heart_rate !== null)
-  }, [sc])
+  }, [selfControlRecords ])
 
   const heartRateConfig = {
     data: chartData,
@@ -68,17 +68,17 @@ export function DashboardPage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="Роль" value={roleRu} />
+            <Statistic title="Роль в системе" value={roleRu} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="Email" value={user?.email ?? '—'} />
+            <Statistic title="Электронная почта" value={user?.email ?? '—'} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="ID" value={user?.id ?? '—'} />
+            <Statistic title="ID пользователя" value={user?.id ?? '—'} />
           </Card>
         </Col>
       </Row>
@@ -87,34 +87,34 @@ export function DashboardPage() {
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
             <Card loading={isLoading}>
-              <Statistic title="Тренировок всего" value={trainingsCounts?.total ?? 0} />
+              <Statistic title="Назначено тренировок" value={trainingsCounts?.total ?? 0} />
             </Card>
           </Col>
           <Col xs={24} md={8}>
             <Card loading={isLoading}>
-              <Statistic title="Выполнено" value={trainingsCounts?.done ?? 0} />
+              <Statistic title="Выполнено тренировок" value={trainingsCounts?.done ?? 0} />
             </Card>
           </Col>
           <Col xs={24} md={8}>
             <Card loading={isLoading}>
-              <Statistic title="Процент выполнения" value={completion} suffix="%" />
+              <Statistic title="Выполнение тренировок" value={completion} suffix="%" />
             </Card>
           </Col>
 
           <Col xs={24} md={12}>
-            <Card title="Ближайшая тренировка" loading={isLoading}>
+            <Card title="Ближайшая назначенная тренировка" loading={isLoading}>
               {!nearest ? (
                 <Typography.Text type="secondary">Нет запланированных тренировок</Typography.Text>
               ) : (
                 <Space direction="vertical" size={4}>
                   <Typography.Text>
-                    Дата: <b>{dayjs(nearest.date).format('DD.MM.YYYY HH:mm')}</b>
+                    Дата и время: <b>{dayjs(nearest.date).format('DD.MM.YYYY HH:mm')}</b>
                   </Typography.Text>
                   <Typography.Text>
-                    Длительность: <b>{nearest.duration_minutes} мин</b>
+                    Продолжительность: <b>{nearest.duration_minutes} мин</b>
                   </Typography.Text>
                   <div>
-                    Статус:{' '}
+                    Статус выполнения:{' '}
                     <Tag color={TRAINING_PARTICIPATION_STATUS[nearest.status]?.color}>
                       {TRAINING_PARTICIPATION_STATUS[nearest.status]?.label ?? nearest.status}
                     </Tag>
@@ -125,8 +125,8 @@ export function DashboardPage() {
           </Col>
 
           <Col xs={24} md={12}>
-            <Card title="Пульс (последние записи)" loading={isLoading}>
-              {chartData.length ? <Line {...heartRateConfig} /> : <Typography.Text type="secondary">Нет данных</Typography.Text>}
+            <Card title="Изменение пульса по последним записям" loading={isLoading}>
+              {chartData.length ? <Line {...heartRateConfig} /> : <Typography.Text type="secondary">Пока нет записей самоконтроля для построения графика</Typography.Text>}
             </Card>
           </Col>
         </Row>

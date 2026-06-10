@@ -20,9 +20,37 @@ class TrainingController extends Controller
             return response()->json(['message' => 'Coach profile not found'], 404);
         }
 
+        $validated = $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'athleteId' => ['nullable', 'integer'],
+        ]);
+
         $items = Training::query()
             ->where('coach_id', $coach->user_id)
-            ->with(['trainingType', 'athletes.user', 'coach.user'])
+
+            ->when(
+                $validated['from'] ?? null,
+                fn($q, $from) => $q->whereDate('date', '>=', $from)
+            )
+
+            ->when(
+                $validated['to'] ?? null,
+                fn($q, $to) => $q->whereDate('date', '<=', $to)
+            )
+
+            ->when($validated['athleteId'] ?? null, function ($q, $athleteId) {
+                $q->whereHas('athletes', function ($sub) use ($athleteId) {
+                    $sub->where('athletes.user_id', $athleteId);
+                });
+            })
+
+            ->with([
+                'trainingType',
+                'coach.user',
+                'athletes.user',
+            ])
+
             ->orderByDesc('date')
             ->paginate(20);
 
