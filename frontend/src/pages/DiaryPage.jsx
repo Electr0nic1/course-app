@@ -68,7 +68,7 @@ export function DiaryPage() {
   const mutation = useMutation({
     mutationFn: (payload) => createSelfControlApi(payload),
     onSuccess: async () => {
-      msg.success('Запись сохранена', 100)
+      msg.success('Запись сохранена', 10)
       setOpen(false)
       await qc.invalidateQueries({ queryKey: ['self-controls'] })
     },
@@ -121,6 +121,13 @@ export function DiaryPage() {
 
         <Table
           rowKey={(r) => r.id ?? `${r.date}-${r.heart_rate}`}
+          expandable={{
+            expandedRowRender: (record) => (
+              <div style={{ whiteSpace: 'pre-wrap' }}>
+                {record.description || '—'}
+              </div>
+            ),
+          }}
           columns={columns}
           dataSource={items}
           loading={isLoading}

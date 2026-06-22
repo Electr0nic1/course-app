@@ -123,7 +123,8 @@ export function TrainingsPage() {
   // Создание тренировки + назначение спортсменов
   const createMutation = useMutation({
     mutationFn: async (payload) => {
-      const { athleteIds, ...trainingPayload } = payload
+      const { athlete_ids, ...trainingPayload } = payload
+      console.log("payload", payload)
 
       const createdTraining = await createTrainingApi(trainingPayload)
 
@@ -137,10 +138,12 @@ export function TrainingsPage() {
         throw new Error('Не удалось получить id созданной тренировки')
       }
 
-      if (Array.isArray(athleteIds) && athleteIds.length > 0) {
-        await assignTrainingApi(trainingId, athleteIds)
+      console.log(athlete_ids)
+      if (Array.isArray(athlete_ids) && athlete_ids.length > 0) {
+        console.log('success')
+        await assignTrainingApi(trainingId, athlete_ids)
       }
-
+      
       return createdTraining
     },
     onSuccess: async () => {
@@ -169,7 +172,7 @@ export function TrainingsPage() {
   const athleteStatusMutation = useMutation({
     mutationFn: ({ id, status }) => updateAthleteTrainingStatusApi(id, status),
     onSuccess: async () => {
-      msg.success('Статус участия обновлён', 100)
+      msg.success('Статус участия обновлён', 10)
       await qc.invalidateQueries({ queryKey: ['trainings'] })
     },
     onError: (e) => {
@@ -434,6 +437,13 @@ export function TrainingsPage() {
 
         <Table
           rowKey={(r) => r.id ?? `${r.date}-${r.duration_minutes}`}
+          expandable={{
+            expandedRowRender: (record) => (
+              <div style={{ whiteSpace: 'pre-wrap' }}>
+                {record.description || '—'}
+              </div>
+            ),
+          }}
           columns={columns}
           dataSource={items}
           loading={isLoading}
@@ -468,7 +478,7 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting, athleteOptio
         form
           .validateFields()
           .then((values) => {
-            const athleteIds = String(values.athleteIds)
+            const athlete_ids = String(values.athlete_ids)
               .split(',')
               .map((x) => x.trim())
               .filter(Boolean)
@@ -476,7 +486,7 @@ function CreateTrainingModal({ open, onClose, onSubmit, submitting, athleteOptio
               .filter((x) => Number.isFinite(x))
 
             onSubmit({
-              athlete_ids: athleteIds,
+              athlete_ids: athlete_ids,
               date: values.date?.toISOString?.() ?? values.date,
               duration_minutes: values.duration_minutes,
               description: values.description,

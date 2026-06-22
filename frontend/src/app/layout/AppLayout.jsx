@@ -41,6 +41,7 @@ function useMenuItems(role) {
     if (role === 'admin') {
       items.push(
         { key: '/admin/users', icon: <TeamOutlined />, label: 'Пользователи' },
+        // { key: '/admin/activity-logs', icon: <TeamOutlined />, label: 'История действий' },
       )
     }
 

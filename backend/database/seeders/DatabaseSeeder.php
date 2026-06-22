@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $coachUsers = User::factory()
-            ->count(3)
+            ->count(50)
             ->role('coach')
             ->create();
 
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
         $athletes = collect();
 
         $athleteUsers = User::factory()
-            ->count(12)
+            ->count(50)
             ->role('athlete')
             ->create();
 
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
             $coachAthletes = $athletes->where('coach_id', $coach->user_id)->values();
 
             $trainings = Training::factory()
-                ->count(8)
+                ->count(10)
                 ->create([
                     'coach_id' => $coach->user_id,
                 ]);

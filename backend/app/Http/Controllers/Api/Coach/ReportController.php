@@ -41,7 +41,7 @@ class ReportController extends Controller
             'avg_systolic_pressure' => (float) (clone $q)->avg('systolic_pressure'),
             'avg_diastolic_pressure' => (float) (clone $q)->avg('diastolic_pressure'),
             'avg_body_weight' => (float) (clone $q)->avg('body_weight'),
-            'avg_feeling' => (float) (clone $q)->avg('feeling'),
+            'avg_feeling' => (float) (clone $q)->avg('feeling')
         ];
 
         $series = (clone $q)
@@ -52,7 +52,9 @@ class ReportController extends Controller
                 'systolic_pressure',
                 'diastolic_pressure',
                 'body_weight',
+                'description',
                 'feeling',
+                
             ]);
 
         return response()->json([

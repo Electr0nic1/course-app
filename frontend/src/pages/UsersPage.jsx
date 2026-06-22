@@ -47,7 +47,7 @@ export function UsersPage() {
   const createMutation = useMutation({
     mutationFn: (payload) => createUserApi(payload),
     onSuccess: async () => {
-      msg.success('Пользователь создан', 100)
+      msg.success('Пользователь создан', 10)
       setOpen(false)
       await qc.invalidateQueries({ queryKey: ['admin-users'] })
     },
@@ -57,7 +57,7 @@ export function UsersPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => updateUserApi(id, payload),
     onSuccess: async () => {
-      msg.success('Пользователь обновлён', 100)
+      msg.success('Пользователь обновлён', 10)
       setEditing(null)
       await qc.invalidateQueries({ queryKey: ['admin-users'] })
     },
@@ -67,7 +67,7 @@ export function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteUserApi(id),
     onSuccess: async () => {
-      msg.success('Пользователь удалён', 60)
+      msg.success('Пользователь удалён', 10)
       await qc.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (e) => msg.error(e?.message ?? 'Не удалось удалить пользователя'),

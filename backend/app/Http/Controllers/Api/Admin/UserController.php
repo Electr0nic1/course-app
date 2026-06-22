@@ -16,7 +16,7 @@ class UserController extends Controller
         $items = User::query()
             ->with('role')
             ->orderBy('id')
-            ->paginate(20);
+            ->get();
 
         return response()->json($items);
     }

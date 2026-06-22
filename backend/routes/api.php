@@ -72,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('athletes', [CoachAthleteController::class, 'index']);
         Route::get('athletes/{athlete}', [CoachAthleteController::class, 'show']);
-
+        Route::post('trainings', [CoachTrainingController::class, 'store']);
         Route::get('athletes/{athlete}/self-controls', [CoachAthleteController::class, 'selfControls']);
         Route::apiResource('trainings', CoachTrainingController::class);
         Route::post('trainings/{training}/assign', [CoachTrainingController::class, 'assign']);
